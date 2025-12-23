@@ -60,6 +60,6 @@ You can hide everything in your .png:
 7. bitcoin_wallet.dat
 8. etc...
 
-But you can **not** upload the modified output.png on web-hosts that re-encoding images, because you hidden data will be lost.<br>
+But you can **not** upload the modified output.png on web-hosts that re-encoding images, because your hidden data will be lost.<br>
 You **can** upload the base64 output.txt in a pastebin or in file sever or send it via email etc...
 <br>
