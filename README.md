@@ -1,7 +1,8 @@
 ![SHH](./shh.png)
 Δικαίωμα στην σιωπή... 🤫
 
-
+---
+A tool that embeds arbitrary files into a PNG image with optional password protection, preserves the image as a valid PNG, supports full reversible extraction, and can safely transport the result through text-only channels via Base64 encoding.
 ---
 ## Required:
 
