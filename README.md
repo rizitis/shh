@@ -42,10 +42,10 @@ Example to hide the secret.html file in the sbodog.png file: <br>
 <br>
 
 To revert back:<br>
-./Shh decode output.**txt** extracted.html
+./Shh decode output.**txt** extracted
 > or
 
-./Shh decode output.**png** extracted.html
+./Shh decode output.**png** extracted
 
 > Password is optional else just hit enter.
 

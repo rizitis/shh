@@ -1,0 +1,109 @@
+.TH SHH 28 "December 2025" "shh 1.1" "User Commands"
+.SH NAME
+shh \- hide files inside PNG images using steganography
+.SH SYNOPSIS
+.B shh hide
+.I image.png secret output
+.br
+.B shh decode
+.I input output
+.SH DESCRIPTION
+.B shh
+is a steganography tool that hides files inside PNG images.
+Data is appended after the PNG IEND chunk, making the image
+appear normal while containing hidden content.
+.PP
+When hiding with a password, data is encrypted using AES-256-CBC
+with PBKDF2 key derivation (100,000 iterations).
+.SH COMMANDS
+.TP
+.B hide
+Hide a file inside a PNG image. Creates two output files:
+.I output.png
+(the stego image) and
+.I output.txt
+(base64 encoded version for safe upload).
+Password is optional (press Enter to skip).
+.TP
+.B decode
+Extract hidden file from a stego image. Accepts both PNG and
+base64 encoded TXT as input. Auto-detects format.
+.SH EXAMPLES
+Hide a file without password:
+.PP
+.RS
+.nf
+$ shh hide photo.png secret.html output
+Password: [Enter]
+.fi
+.RE
+.PP
+Hide a file with password:
+.PP
+.RS
+.nf
+$ shh hide photo.png secret.pdf output
+Password: ********
+Confirm: ********
+.fi
+.RE
+.PP
+Extract from PNG:
+.PP
+.RS
+.nf
+$ shh decode output.png extracted
+$ file extracted
+extracted: HTML document, ASCII text
+$ mv extracted extracted.html
+.fi
+.RE
+.PP
+Extract from base64:
+.PP
+.RS
+.nf
+$ shh decode output.txt extracted
+Password: ********
+$ file extracted
+extracted: PDF document, version 1.4
+$ mv extracted extracted.pdf
+.fi
+.RE
+.SH SECURITY
+.TP
+.B Encryption
+AES-256-CBC with random salt and IV
+.TP
+.B Key Derivation
+PBKDF2-HMAC-SHA256 with 100,000 iterations
+.TP
+.B Password
+Not echoed to terminal
+.SH FILES
+.TP
+.I output.png
+Stego image (valid PNG with hidden data)
+.TP
+.I output.txt
+Base64 encoded stego image (for upload to services that re-encode images)
+.SH EXIT STATUS
+.TP
+.B 0
+Success
+.TP
+.B 1
+Error (wrong password, file not found, etc.)
+.SH NOTES
+The hidden data is appended after the PNG IEND chunk.
+Image viewers only read up to IEND, so the image displays normally.
+.PP
+Some services (Facebook, Twitter, etc.) re-encode uploaded images,
+which removes hidden data. Use the base64 TXT output for text-based
+sharing, or upload to services that preserve original files.
+.SH AUTHOR
+Written by P.A.O
+.SH SEE ALSO
+.BR openssl (1),
+.BR steghide (1),
+.BR binwalk (1)

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        canvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #f0f0f0;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        canvas.width = 800;
+        canvas.height = 600;
+        
+        // Triangle properties
+        const triangleSize = 200;
+        const triangleVertices = [
+            { x: -triangleSize/2, y: triangleSize/2 },  // Left base
+            { x: triangleSize/2, y: triangleSize/2 },   // Right base
+            { x: 0, y: -triangleSize/2 }                // Top
+        ];
+        let rotation = 0;
+        const rotationSpeed = 0.02;
+        
+        // Ball properties
+        const ball = {
+            x: 0,
+            y: -triangleSize/4,
+            radius: 10,
+            velocityX: 0,
+            velocityY: 0,
+            color: 'red'
+        };
+        
+        // Physics parameters
+        const gravity = 0.5;
+        const bounce = 0.8;
+        const friction = 0.99;
+        
+        // Rotation functions
+        function rotatePoint(point, angle) {
+            return {
+                x: point.x * Math.cos(angle) - point.y * Math.sin(angle),
+                y: point.x * Math.sin(angle) + point.y * Math.cos(angle)
+            };
+        }
+        
+        // Collision detection
+        function checkEdgeCollision(p1, p2) {
+            // Vector from p1 to p2
+            const edge = { x: p2.x - p1.x, y: p2.y - p1.y };
+            const edgeLength = Math.hypot(edge.x, edge.y);
+            
+            // Vector from p1 to ball
+            const toBall = { x: ball.x - p1.x, y: ball.y - p1.y };
+            
+            // Project toBall onto edge
+            const t = Math.max(0, Math.min(1, (toBall.x * edge.x + toBall.y * edge.y) / (edgeLength * edgeLength)));
+            const closest = {
+                x: p1.x + t * edge.x,
+                y: p1.y + t * edge.y
+            };
+            
+            // Distance to closest point
+            const dx = ball.x - closest.x;
+            const dy = ball.y - closest.y;
+            const distance = Math.hypot(dx, dy);
+            
+            if (distance < ball.radius) {
+                // Collision normal
+                const normal = { x: dx / distance, y: dy / distance };
+                
+                // Reflect velocity
+                const dot = ball.velocityX * normal.x + ball.velocityY * normal.y;
+                ball.velocityX = (ball.velocityX - 2 * dot * normal.x) * bounce;
+                ball.velocityY = (ball.velocityY - 2 * dot * normal.y) * bounce;
+                
+                // Position correction
+                const overlap = ball.radius - distance;
+                ball.x += normal.x * overlap;
+                ball.y += normal.y * overlap;
+            }
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update rotation
+            rotation += rotationSpeed;
+            
+            // Rotate triangle vertices
+            const rotatedVertices = triangleVertices.map(p => 
+                rotatePoint(p, rotation)
+            );
+            
+            // Draw triangle
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.beginPath();
+            ctx.moveTo(rotatedVertices[0].x, rotatedVertices[0].y);
+            rotatedVertices.forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.closePath();
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Apply physics
+            ball.velocityY += gravity;
+            ball.velocityX *= friction;
+            ball.velocityY *= friction;
+            
+            ball.x += ball.velocityX;
+            ball.y += ball.velocityY;
+            
+            // Check collisions with all edges
+            for (let i = 0; i < rotatedVertices.length; i++) {
+                const p1 = rotatedVertices[i];
+                const p2 = rotatedVertices[(i+1)%rotatedVertices.length];
+                checkEdgeCollision(p1, p2);
+            }
+            
+            // Draw ball
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ball.color;
+            ctx.fill();
+            ctx.restore();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Click to launch ball
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left - canvas.width/2;
+            const mouseY = event.clientY - rect.top - canvas.height/2;
+            
+            // Set ball position and velocity
+            ball.x = mouseX;
+            ball.y = mouseY;
+            ball.velocityX = (mouseX - ball.x) * 0.1;
+            ball.velocityY = (mouseY - ball.y) * 0.1;
+        });
+        
+        animate();
+    </script>
+</body>
+</html>
